@@ -40,6 +40,8 @@ def calcular_metricas(y_true, y_prob, class_order):
     )
     cm = confusion_matrix(y_true, y_pred, labels=labels)
     auc_macro = roc_auc_score(y_true, y_prob, average="macro", multi_class="ovr", labels=labels)
+    # AUC uno contra el resto por clase; su promedio simple es auc_macro_ovr.
+    auc_clase = [roc_auc_score((y_true == k).astype(int), y_prob[:, k]) for k in labels]
 
     return {
         "n_muestras": int(len(y_true)),
@@ -50,6 +52,7 @@ def calcular_metricas(y_true, y_prob, class_order):
         "precision_macro": float(precision.mean()),
         "recall_macro": float(recall.mean()),
         "f1_macro": float(f1.mean()),
+        "auc_per_class": {c: float(v) for c, v in zip(class_order, auc_clase)},
         "auc_macro_ovr": float(auc_macro),
         "confusion_matrix": cm.tolist(),
     }

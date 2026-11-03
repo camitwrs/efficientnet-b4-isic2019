@@ -1,24 +1,25 @@
-# Aquí se define la configuración piloto para M1 (transfer learning con EfficientNetB4) y M4
-# (CNN entrenada desde cero) sobre ISIC 2019. Es solo una especificación de diseño: todavía
-# no se descargan datos ni se ejecutan entrenamientos.
-status: proposed
+# Configuración de M1 (transfer learning con EfficientNetB4) y M4 (CNN entrenada desde cero)
+# sobre ISIC 2019. Nació como especificación piloto; tras los pilotos y la selección de
+# profundidad se congeló y con ella se ejecutaron las diez corridas finales (commit 04b8389),
+# solo con train y validation. Cada clave lleva su estado; el conjunto de test aún no se evalúa.
+status: frozen_before_test
 seed: 42
 framework: tensorflow
 
 dataset:
   name: ISIC_2019
   split: training
-  status: pending_execution
+  status: executed
   classes:
     order: [AK, BCC, BKL, DF, MEL, NV, SCC, VASC]
     num_classes: 8
   input_shape: [380, 380, 3]
   expected_image_count: 25331
-  expected_image_count_status: pending_verification
+  expected_image_count_status: verified
   partition:
-    specification_status: proposed
-    materialization_status: pending_execution
-    materialized: false
+    specification_status: frozen
+    materialization_status: executed
+    materialized: true
     train: 0.70
     validation: 0.15
     test: 0.15
@@ -46,8 +47,8 @@ preprocessing:
     range: [0, 1]
     normalization: divide_by_255
   augmentation:
-    specification_status: proposed
-    execution_status: pending_execution
+    specification_status: frozen
+    execution_status: executed
     applies_to: train_only
     order:
       - horizontal_flip
@@ -98,12 +99,12 @@ common:
       min_delta: 0.0001
       cooldown: 0
   class_weights:
-    status: pending_execution
+    status: executed
     formula: "w_c = N / (K * n_c)"
     computed_from: train_only
 
 checkpoint_selection:
-  status: proposed
+  status: frozen_before_test
   selection_set: validation
   monitor: val_loss
   mode: min
@@ -120,7 +121,7 @@ checkpoint_selection:
 reproducibility:
   partition_seed: 42
   training_seeds:
-    specification_status: proposed
+    specification_status: executed
     values: [42, 123, 456, 789, 2026]
   controls:
     python_random: true
@@ -155,7 +156,7 @@ m1:
       activation: softmax
       dtype: float32
   training:
-    status: pending_execution
+    status: executed
     fase_1:
       backbone: frozen
       freeze_includes_backbone_batchnorm: true
@@ -170,8 +171,8 @@ m1:
         name: Adam
         learning_rate: 0.00001
       max_epochs: 35
-      # La profundidad de descongelado se elige empiricamente entre tres candidatos
-      # declarados antes de correr (ver seleccion_descongelado). Los candidatos se alinean
+      # La profundidad de descongelado se eligio empiricamente entre cinco candidatos,
+      # en dos rondas declaradas antes de correr (ver seleccion_descongelado). Los candidatos se alinean
       # a bloques; "ceil(0.30 * L)" cortaba a mitad del bloque 6a y equivalia al 77 %
       # de los parametros del backbone.
       candidates:

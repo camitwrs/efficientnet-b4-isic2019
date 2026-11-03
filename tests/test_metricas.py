@@ -72,6 +72,24 @@ class TestMetricas(unittest.TestCase):
         with self.assertRaises(ValueError):
             calcular_metricas([0, 1, 2], _probs([0, 1, 2])[:, :2], CLASES)
 
+    def test_probabilidades_empatadas(self):
+        # Con todas las probabilidades iguales, argmax elige la clase de menor indice
+        # y el AUC cuenta los empates como medio acierto: 0,5 en cada clase.
+        y = [0, 1, 2, 0, 1, 2]
+        m = calcular_metricas(y, np.full((6, 3), 1 / 3), CLASES)
+        self.assertAlmostEqual(m["accuracy_global"], 2 / 6)
+        self.assertAlmostEqual(m["recall_per_class"]["A"], 1.0)
+        for clase in CLASES:
+            self.assertAlmostEqual(m["auc_per_class"][clase], 0.5)
+        self.assertAlmostEqual(m["auc_macro_ovr"], 0.5)
+
+    def test_auc_macro_es_promedio_de_auc_por_clase(self):
+        rng = np.random.default_rng(0)
+        y = np.array([0, 1, 2] * 10)
+        p = rng.dirichlet(np.ones(3), size=len(y))
+        m = calcular_metricas(y, p, CLASES)
+        self.assertAlmostEqual(m["auc_macro_ovr"], np.mean(list(m["auc_per_class"].values())))
+
     def test_mof(self):
         m = {"accuracy_global": 0.6, "recall_macro": 0.5, "auc_macro_ovr": 0.9}
         w = {"accuracy_global": 0.1, "recall_macro": 0.6, "auc_macro_ovr": 0.3}

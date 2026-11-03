@@ -9,6 +9,11 @@ Vectores analizados (reglas en configs/pilot_m1_m4.yaml, evaluation.mof):
 Por cada vector y semilla compara MOF(M1) - MOF(M4) y examina si su signo se
 mantiene, se invierte o pasa a empate respecto de la referencia.
 
+Comparacion principal (src/evaluation/comparacion.py): sobre la MOF con pesos AHP,
+pares por semilla, diferencias, media, mediana, Wilcoxon exacto bilateral y
+correlacion biserial por rangos. Las metricas desagregadas se comparan solo de
+forma descriptiva (pares y diferencias), sin contraste.
+
 Uso:
     python scripts/calcular_mof.py --m1 runs/evaluacion/m1_seed42_test_* ... --m4 runs/evaluacion/m4_seed42_test_* ...
 """
@@ -24,7 +29,8 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.evaluation.mof import CRITERIOS, ablation, comparar_por_semilla, perturbar
+from src.evaluation.comparacion import comparacion_pareada
+from src.evaluation.mof import CRITERIOS, ablation, comparar_por_semilla, mof, perturbar
 
 CONFIG_PATH = PROJECT_ROOT / "configs" / "pilot_m1_m4.yaml"
 AHP_PATH = PROJECT_ROOT / "reports" / "ahp_report.json"
@@ -105,8 +111,20 @@ def main():
         }
         r["orden_por_media_igual_a_referencia"] = r["orden_por_media"] == resultados[r["origen"]]["orden_por_media"]
 
+    # Comparacion principal: MOF con pesos AHP, con el contraste complementario declarado.
+    principal = comparacion_pareada({s: mof(m1[s], referencias["AHP"]) for s in m1},
+                                    {s: mof(m4[s], referencias["AHP"]) for s in m4})
+    # Metricas desagregadas: solo descriptivo, sin Wilcoxon.
+    descriptivo = {}
+    for metrica in CRITERIOS:
+        c = comparacion_pareada({s: m1[s][metrica] for s in m1}, {s: m4[s][metrica] for s in m4})
+        c.pop("wilcoxon")
+        descriptivo[metrica] = c
+
     salida = {
         "particion": next(iter(part1)),
+        "comparacion_principal_mof_ahp": principal,
+        "metricas_descriptivas": descriptivo,
         "tolerancia_empate": tolerancia,
         "semillas": sorted(m1),
         "vectores": resultados,
@@ -124,6 +142,9 @@ def main():
             for s, fila in r["por_semilla"].items():
                 w.writerow([nombre, r["tipo"], s, f"{fila['mof_m1']:.6f}", f"{fila['mof_m4']:.6f}",
                             f"{fila['diferencia']:.6f}", fila["signo"]])
+    w = principal["wilcoxon"]
+    print(f"MOF AHP: media de la diferencia M1 - M4 = {principal['media_diferencia']:.4f}; "
+          f"Wilcoxon exacto p = {w['p_bilateral']}, r biserial = {w['r_biserial']} (n efectivo = {w['n_efectivo']})")
     print(f"{len(resultados)} vectores, {len(m1)} semillas ({salida['particion']}). Guardado en {args.output} y {csv_path.name}")
     if descartados:
         print(f"Perturbaciones no admisibles: {descartados}")
