@@ -2,6 +2,7 @@ cff-version: 1.2.0
 message: "Si usa este código, cítelo con los datos siguientes."
 title: "EfficientNet-B4 frente a una CNN desde cero en ISIC 2019, con valoración multiobjetivo ponderada por AHP"
 type: software
+license: MIT
 authors:
   - family-names: "Torres Vega"
     given-names: "Camila"

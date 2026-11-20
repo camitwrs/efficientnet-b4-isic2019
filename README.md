@@ -69,8 +69,12 @@ El orden de ejecución, de la partición a las figuras, es:
 | Entrenamiento | `scripts/train_m1_fase1.py`, `scripts/train_m1_fase2.py`, `scripts/train_m4.py` (plantillas en `jobs/`) |
 | Evaluación sobre prueba | `scripts/evaluar_modelo.py` |
 | MOF y sensibilidad | `scripts/calcular_mof.py` |
-| Tablas y figuras | `scripts/tablas_resultados_prueba.py`, `scripts/generar_figuras_evaluacion.py` |
+| Tablas y figuras | `scripts/tablas_resultados_prueba.py`, `scripts/generar_figuras_evaluacion.py`, `scripts/figuras_resultados.py`, `scripts/curvas_entrenamiento.py` |
 | Grad-CAM | `scripts/generar_gradcam.py`, `scripts/diagnostico_gradcam_esquina.py` |
+
+## Licencia
+
+El código se distribuye bajo licencia MIT (ver `LICENSE`). Las imágenes de ISIC 2019 tienen su propia licencia y no forman parte del repositorio.
 
 ## Cómo citar
 
