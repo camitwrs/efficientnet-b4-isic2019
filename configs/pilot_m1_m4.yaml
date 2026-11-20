@@ -1,7 +1,8 @@
 # Configuración de M1 (transfer learning con EfficientNetB4) y M4 (CNN entrenada desde cero)
 # sobre ISIC 2019. Nació como especificación piloto; tras los pilotos y la selección de
 # profundidad se congeló y con ella se ejecutaron las diez corridas finales (commit 04b8389),
-# solo con train y validation. Cada clave lleva su estado; el conjunto de test aún no se evalúa.
+# solo con train y validation. Despues se evaluo el conjunto de test una sola vez (3-nov-2026) y se
+# aplicaron la MOF, su sensibilidad, la comparacion pareada y Grad-CAM (semilla 42). Cada clave lleva su estado.
 status: frozen_before_test
 seed: 42
 framework: tensorflow
@@ -350,7 +351,7 @@ m4:
       uses_test: false
 
 evaluation:
-  status: pending_execution
+  status: executed
   metrics:
     - accuracy_global
     - precision_per_class
@@ -362,7 +363,7 @@ evaluation:
     - auc_macro_ovr
     - confusion_matrix
   mof:
-    status: pending_execution
+    status: executed
     formula: "MOF = w1*accuracy_global + w2*recall_macro + w3*auc_macro"
     analysis_rules:
       status: frozen_before_test
@@ -376,7 +377,7 @@ evaluation:
       C2: { w1: 0.20, w2: 0.60, w3: 0.20 }
       C3: { w1: 0.20, w2: 0.20, w3: 0.60 }
     ablation:
-      status: pending_execution
+      status: executed
       question: "la conclusion M1 vs M4 depende de alguna metrica en particular?"
       rule: "se quita una metrica a la vez y su peso se reparte proporcionalmente entre las restantes: w_j' = w_j / suma de los pesos que quedan"
       applied_to: ahp_principal_vector
@@ -467,12 +468,12 @@ evaluation:
       limitación metodológica explícita; sujeta a revisión en el marco de la
       supervisión del proyecto de título. El comité de supervisión tiene perfil de
       ingeniería, no clínico: esta limitación no se resuelve con su revisión, se
-      mitiga con el análisis de sensibilidad C0-C3.
+      mitiga con el análisis de sensibilidad C0-C3. Estado final: los pesos se
+      congelaron el 2026-10-28 sin revisión formal.
     requirement: >
-      Revisión metodológica (no clínica) bajo la supervisión del proyecto de título:
-      verificar que el procedimiento AHP esté bien aplicado (escala de Saaty,
-      CR<=0.10) y que la evidencia citada (Garbe et al. 2026; Krohling et al. 2021;
-      Kurtansky et al. 2025) respalde razonablemente los juicios. No se dispone de
-      validación clínica experta; esa limitación se mitiga con el análisis de
-      sensibilidad C0-C3, no con esta revisión. Completar antes de las corridas
-      principales y de consultar prueba.
+      Estado final: la revisión metodológica (no clínica) prevista bajo la supervisión
+      del proyecto de título NO se realizó de manera formal antes de congelar los pesos
+      (2026-10-28); se declara como limitación. La limitación clínica se mitiga con el
+      análisis de sensibilidad (C0-C3, perturbaciones y ablación), que acota la magnitud
+      de la ventaja de M1 pero, como M1 supera a M4 en las tres métricas por semilla, no
+      puede invertir su signo.

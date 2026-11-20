@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "Si usa este código, cítelo con los datos siguientes."
+title: "EfficientNet-B4 frente a una CNN desde cero en ISIC 2019, con valoración multiobjetivo ponderada por AHP"
+type: software
+authors:
+  - family-names: "Torres Vega"
+    given-names: "Camila"
+  - family-names: "Houter Hube"
+    given-names: "Jan"
+repository-code: "https://github.com/camitwrs/efficientnet-b4-isic2019"
+keywords:
+  - EfficientNet-B4
+  - ISIC 2019
+  - skin lesions
+  - multi-objective function
+  - AHP
